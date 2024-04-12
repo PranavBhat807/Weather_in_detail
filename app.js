@@ -2,6 +2,9 @@
 import { fetchData, url } from "./api.js";
 import * as module from "./module.js";
 
+
+
+
 /**
  * Add event listener on multiple elements
  * @param {Nodelist} elements Elements node array
@@ -96,8 +99,8 @@ const errorContent = document.querySelector("[data-error-content]");
 
 export const updateWeather = function (lat, lon) {
     // loading.style.display = "grid";
-    container.style.overflowY = "hidden";
-    container.classList.contains("fade-in") ?? container.classList.remove("fade-in");
+    // container.style.overflowY = "hidden";
+    // container.classList.remove("fade-in");
     errorContent.style.display = "none";
 
     const currentWeatherSection = document.querySelector("[data-current-weather]");
@@ -127,7 +130,8 @@ export const updateWeather = function (lat, lon) {
             sys: { sunrise: sunriseUnixUTC, sunset: sunsetUnixUTC },
             main: { temp, feels_like, pressure, humidity },
             visibility,
-            timezone
+            timezone,
+            wind: { speed }
 
         } = currentWeather
 
@@ -169,6 +173,138 @@ export const updateWeather = function (lat, lon) {
         currentWeatherSection.appendChild(card);
 
 
+        /**TODAY'S HIGHLIGHTS */
+        fetchData(url.airPollution(lat, lon), function (airPollution) {
+
+            const [{
+                main: { aqi },
+                components: { no2, o3, so2, pm2_5 }
+            }] = airPollution.list;
+
+            const card = document.createElement("div");
+            card.classList.add("card", "card-lg");
+
+            card.innerHTML = `
+            <h2 class="title-2" id="highlights-label">Todays Highlights</h2>
+                        
+                        <div class="highlight-list">
+
+                            <div class="card card-sm highlight-card one">
+                                <h3 class="title-3">Air Quality Index</h3>
+                                <div class="wrapper">
+                                    <span class="m-icon">air</span>
+                                    <ul class="card-list">
+                                        <li class="card-item">
+                                            <p class="title-1">${pm2_5.toPrecision(3)}</p>
+
+                                            <p class="label-1">PM <sub>2.5</sub></p>
+
+                                        </li>
+                                        <li class="card-item">
+                                            <p class="title-1">${so2.toPrecision(3)}</p>
+
+                                            <p class="label-1">SO<sub>2</sub></p>
+
+                                        </li>
+                                        <li class="card-item">
+                                            <p class="title-1">${no2.toPrecision(3)}</p>
+
+                                            <p class="label-1">NO<sub>2</sub></p>
+
+                                        </li>
+                                        <li class="card-item">
+                                            <p class="title-1">${o3.toPrecision(3)}</p>
+
+                                            <p class="label-1">O<sub>3</sub></p>
+
+                                        </li>
+                                        
+                                    </ul>
+                                </div>
+
+                                <span class="badge aqi-${aqi} label-${aqi}" title="${module.aqiText[aqi].message}">
+                                    ${module.aqiText[aqi].level}
+                                </span>
+                            </div>
+
+                            <div class="card card-sm highlight-card two">
+                                <h3 class="title-3">Sunrise & Sunset</h3>
+                                <div class="card-list">
+                                    <div class="card-item">
+                                        <span class="m-icon">clear_day</span>
+                                        <div>
+                                            <p class="label-1">Sunrise</p>
+                                            <p class="title-1">${module.getTime(sunriseUnixUTC, timezone)}</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-item">
+                                        <span class="m-icon">clear_night</span>
+                                        <div>
+                                            <p class="label-1">Sunset</p>
+                                            <p class="title-1">${module.getTime(sunsetUnixUTC, timezone)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card card-sm highlight-card">
+                                <h3 class="title-3">Humidity</h3>
+
+                                <div class="wrapper">
+                                    <span class="m-icon">humidity_percentage</span>
+
+                                    <p class="title-1">${humidity}<sub>%</sub></p>
+                                </div>
+                            </div>
+
+                            <div class="card card-sm highlight-card">
+                                <h3 class="title-3">Pressure</h3>
+
+                                <div class="wrapper">
+                                    <span class="m-icon">airwave</span>
+
+                                    <p class="title-1">${pressure}<sub>hPa</sub></p>
+                                </div>
+                            </div>
+
+                            <div class="card card-sm highlight-card">
+                                <h3 class="title-3">Visibility</h3>
+
+                                <div class="wrapper">
+                                    <span class="m-icon">visibility</span>
+
+                                    <p class="title-1">${visibility / 1000}<sub>km</sub></p>
+                                </div>
+                            </div>
+
+                            <div class="card card-sm highlight-card">
+                                <h3 class="title-3">Feels like</h3>
+
+                                <div class="wrapper">
+                                    <span class="m-icon">thermostat</span>
+
+                                    <p class="title-1">${parseInt(feels_like)}&deg<sup>C</sup></p>
+                                </div>
+                            </div>
+
+                            <div class="card card-sm highlight-card">
+                                <h3 class="title-3">Wind Speed</h3>
+
+                                <div class="wrapper">
+                                    <span class="m-icon">speed</span>
+
+                                    <p class="title-1">${speed}<sub>kmph</sub></p>
+                                </div>
+                            </div>
+
+                            
+                            </div>
+
+                        </div>`;
+
+            highlghtSection.appendChild(card);
+
+        });
 
 
 
